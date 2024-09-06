@@ -4,165 +4,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bootcamp APs</title>
-    <script src="//unpkg.com/alpinejs" defer></script>
+    <title>Bootcamp APIs</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"
         integrity="sha512-uMtXmF28A2Ab/JJO2t/vYhlaa/3ahUOgj1Zf27M5rOo8/+fcTUVH0/E0ll68njmjrLqOBjXM3V9NiPFL5ywWPQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="word-game.js" defer></script>
     <link rel="stylesheet" href="style.css">
-    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 </head>
 
 <body>
-    <div class="row" x-data="{
-        sentence: '',
-        typedSentence: '',
+    <h1>My Bootcamp API</h1>
 
-        type: '',
-        billTotal: 0,
-        enteredPrice: '',
-        typedBill: '',
-        amount: '',
+    <div class="widget" x-data="{
+            sentence: '',
+            longestWord: '',
+            shortestWord: '',
+            wordLengths: 0,
+            resultToShow: '', 
+    
+            checkSentence() {
+                axios.get(`/api/word_game?sentence=${this.sentence}`)
+                    .then((result) => {
+                        this.longestWord = result.data.longestWord;
+                        this.shortestWord = result.data.shortestWord;
+                        this.wordLengths = result.data.sum;
+                        this.resultToShow = ''; 
+                    });
+            },
+            billTotal: '',
+            showResult: false,
+            usage: '',
+            available: '',
+            usage1: '',
+            available1: '',
+            result: '',
+            enteredBill: '',
+            phonebill: '',
+    
+            calculateBill(){
+                axios.get(`/api/phonebill/total?bill=${this.phonebill}`)
+                .then(result => {
+                    console.log(result.data)
+                    this.billTotal = result.data.bill
+                })
+            },
 
-        phonebill: 0,
-        enteredBill: '',
-
-        TotalDff: '',
-        usageEntry: '',
-        usage: '',
-        amountEntered: '',
-        airtime: '',
-        airtimeCalc(){
-            axios.get(`/api/enough?usage=${this.usage}&available=${this.airtime}`)
-            .then(result => {
-                console.log(result.data)
-                this.TotalDff = result.data.result
-            })
-        },
-        totalPhonebill(){
-            axios.get(`/api/phonebill/prices?type=${this.type}&price=${this.amount}`)
-            .then(result => {
-                console.log(result.data)
-                //this.billTotal = result.data.bill
-            })
-        },
-        calcBill(){
-            axios.get(`/api/phonebill/total?bill=${this.phonebill}`)
-            .then(result => {
-                console.log(result.data)
-                this.billTotal = result.data.bill
-            })
-        },
-        game(){
-            axios.get(`/api/word_game?sentence=${this.sentence}`)
-            .then(result => {
-                console.log(result.data.longestWord)
-                this.sentence = result.data
-            })
-        },
+            checkAirtime() {
+                axios.get(`/api/enough?usage=${this.usage1}&available=${this.available1}`)
+                .then((response) => {
+                    this.result = response.data.result;
+                })
+                .catch((error) => {
+                    console.error(error);
+                    this.result = 'Error';
+                });
         
+            },
+            clearForm() {
+                this.usage1 = '';
+                this.available1 = '';
+                this.result = '';
+            }
+        }">
 
-    }">
-    <h3 class="text-center" >Bootcamp-APls</h3>
-
-<div  class="card-container">
-        <div class="">
-            <div class="card">
-                <div class="card-body ">
-                    <h3 class="card-title">WORD GAME</h3>
-
-                    <div >
-                        <span>Longest Word: </span>
-                        <span class="styled-x-text" x-text="sentence.longestWord"></span><br><br>
-                        <span>Shortest Word: </span>
-                        <span class="styled-x-text" x-text="sentence.shortestWord"></span><br><br>
-                        <span>Letter count: </span>
-                        <span class="styled-x-text" x-text="sentence.wordLengths"></span><br><br>
-                    </div>
-
-                    <!-- <form> -->
-                    <input class="form-control" type="text" x-model="typedSentence"
-                        placeholder="enter a sentence" /><br>
-                    <button class="" @click="(game), (sentence=typedSentence), (setTimeout(() => {
-                                typedSentence='';
-                                sentence= '';
-                              }, 5000))">Submit</button>
-                    <!-- </form> -->
-
+        <!-- Word game -->
+        <div class="container mt-4">
+            <h3>Word Game Widget</h3>
+            <div class="mb-3">
+                <textarea x-model="sentence" class="form-control" rows="5"></textarea>
+                <div class="mt-3">
+                    <button x-on:click="checkSentence" class="btn btn-primary">Check Sentence</button>
                 </div>
             </div>
-
+        
+            <div class="mb-3">
+                <div class="form-check">
+                    <input type="radio" id="longest" name="result" value="longest" x-model="resultToShow" class="form-check-input">
+                    <label for="longest" class="form-check-label">Longest word: <span x-text="longestWord"></span></label>
+                </div>
+        
+                <div class="form-check">
+                    <input type="radio" id="shortest" name="result" value="shortest" x-model="resultToShow" class="form-check-input">
+                    <label for="shortest" class="form-check-label">Shortest word: <span x-text="shortestWord"></span></label>
+                </div>
+        
+                <div class="form-check">
+                    <input type="radio" id="wordLengths" name="result" value="wordLengths" x-model="resultToShow" class="form-check-input">
+                    <label for="wordLengths" class="form-check-label">Word Lengths: <span x-text="wordLengths"></span></label>
+                </div>
+            </div>
+        
+            <div>
+                <div x-show="resultToShow === 'longest'">
+                    Longest word: <span x-text="longestWord"></span>
+                </div>
+        
+                <div x-show="resultToShow === 'shortest'">
+                    Shortest word: <span x-text="shortestWord"></span>
+                </div>
+        
+                <div x-show="resultToShow === 'wordLengths'">
+                    Word Lengths: <span x-text="wordLengths"></span>
+                </div>
+            </div>
         </div>
-      <!---  <div class="card">
+        
+        <!-- Enough Airtime -->
+        <div class="container mt-4">
+            <h3>Enough Airtime Widget</h3>
+            <div class="mb-3">
+                <label for="usage" class="form-label">Projected Usage:</label>
+                <input type="text" x-model="usage1" id="usage" class="form-control">
+            </div>
+            <br>
+            <div class="mb-3">
+                <label for="available" class="form-label">Available Airtime:</label>
+                <input type="number" x-model="available1" id="available" class="form-control">
+            </div>
+            <br>
+            <div class="mb-3">
+                <button x-on:click="checkAirtime" class="btn btn-primary">Check Airtime</button>
+            </div>
+            <br>
+            <div class="mb-3">
+                <button class="btn btn-secondary" x-on:click="clearForm">Clear</button>
+            </div>
+            <br>
+            <div x-show="result">
+                Result: <span x-text="result"></span>
+            </div>
+        </div>
+        
+        <!-- totalPhoneBill -->
+        <div class="container mt-4">
+            <h3>Calculate PhoneBill Widget</h3>
             <div class="card-body">
-                <h3 class="card-title">Total Phone Bill</h3>
-                <div>
-                    <span>Type: </span><span class="styled-x-text" x-text="type"></span><br><br>
-                    <span>Price: </span><span class="styled-x-text" x-text="amount"></span><br>
-                </div>
-                <select class="form-control" name="type" id="type" x-model="typedBill">
-                    <option>Select type</option>
-                    <option value="call">call</option>
-                    <option value="sms">sms</option>
-                </select>
-                <input class="form-control" type="number" x-model="enteredPrice" placeholder="enter a price" /><br>
-                <button class="" @click="(totalPhonebill), (type=typedBill), (amount=enteredPrice), (setTimeout(() => {
-                    type='';
-                    typedBill= '';
-                    amount = '';
-                    enteredPrice= '';
-                }, 5000))">Done</button>
+                <p x-text="billTotal" x-show="showResult"></p>
+                <label for="billInput" class="form-label">Enter a bill:</label>
+                <input class="form-control" type="text" x-model="enteredBill" id="billInput" placeholder="Enter a bill">
+                <button class="btn btn-primary mt-3"
+                    @click="(calculateBill), (phonebill = enteredBill), (showResult = true), (setTimeout(() => showResult = false, 3000))">Done</button>
             </div>
         </div>
-        </div>
-        <div  class="card-container"> -->
-
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">Total Phone Bill</h3>
-                <span>Bill: </span><span class="styled-x-text" x-text="billTotal"></span>
-                <input class="form-control" type="text" x-model="enteredBill" placeholder="enter a bill..." /><br>
-                <button class="" @click="(calcBill), (phonebill=enteredBill), (setTimeout(() => {
-                    billTotal='';
-                    enteredBill= '';
-                }, 5000))">Done</button>
-            </div>
-        </div>
-
-        <div class="">
-            <div class="card">
-
-                <div class="card-body ">
-                    <h3 class="card-title">Enough Airtime</h3>
-                    <span>result: </span><span class="styled-x-text" x-text="TotalDff"></span>
-
-                    <!-- <form> -->
-                    <!-- <label>Enter usage</label> -->
-                    <input class="form-control" type="text" x-model="usageEntry" placeholder="enter usage" /><br>
-                    <!-- <label>Enter Amount</label> -->
-                    <input class="form-control" type="number" x-model="amountEntered"
-                        placeholder="enter amount..." /><br>
-                    <button class="" @click="(airtimeCalc), (usage=usageEntry),(airtime=amountEntered),(setTimeout(() => {
-                            TotalDff='',    
-                            usage='';
-                                airtime= 0;
-                                usageEntry='';
-                                amountEntered= 0;
-                            }, 5000))">Submit</button>
-                    <!-- </form> -->
-
-                </div>
-
-
-            </div>
-
-        </div>
-    </div>
-
-
-    </div>
-
+        
 </body>
-
 </html>
